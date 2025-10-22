@@ -1,167 +1,194 @@
 <?php
 date_default_timezone_set('Asia/Jakarta');
-$file = "mahasiswa.txt";
+$file = "data_mahasiswa.txt";
 
-// Simpan data ke file
+// Simpan data
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nama = trim($_POST['nama']);
     $nim = trim($_POST['nim']);
     $prodi = trim($_POST['prodi']);
 
     if ($nama && $nim && $prodi) {
-        $baris = "$nama | $nim | $prodi | " . date("d-m-Y H:i:s") . PHP_EOL;
-        file_put_contents($file, $baris, FILE_APPEND);
-        $pesan = ["type" => "success", "text" => "✅ Data berhasil disimpan!"];
+        $data = "$nama | $nim | $prodi | " . date("d-m-Y H:i:s") . PHP_EOL;
+        file_put_contents($file, $data, FILE_APPEND);
+        $pesan = ["tipe" => "sukses", "teks" => "✅ Data mahasiswa berhasil disimpan!"];
     } else {
-        $pesan = ["type" => "error", "text" => "❌ Semua field wajib diisi!"];
+        $pesan = ["tipe" => "gagal", "teks" => "⚠️ Semua field wajib diisi!"];
     }
 }
 
-$dataMahasiswa = file_exists($file) ? file($file, FILE_IGNORE_NEW_LINES) : [];
+$mahasiswa = file_exists($file) ? file($file, FILE_IGNORE_NEW_LINES) : [];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Input Data Mahasiswa</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input Data Mahasiswa</title>
+<style>
+    * {
+        box-sizing: border-box;
+    }
     body {
-      margin: 0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(120deg, #ff9966, #ff5e62);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 30px;
+        margin: 0;
+        font-family: "Poppins", Arial, sans-serif;
+        background: linear-gradient(120deg, #1e3a8a, #0d9488);
+        color: #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
-    h1 {
-      margin-bottom: 5px;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    header {
+        text-align: center;
+        padding: 20px;
+        background: rgba(0,0,0,0.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    p {
-      margin-bottom: 25px;
-      font-size: 15px;
-      opacity: 0.9;
+    main {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        padding: 40px 20px;
     }
-    form {
-      background: rgba(255,255,255,0.15);
-      padding: 25px 30px;
-      border-radius: 15px;
-      width: 320px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    .form-section, .table-section {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        backdrop-filter: blur(5px);
+    }
+    .form-section {
+        flex: 1 1 280px;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
     }
     label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
+        margin-top: 10px;
+        font-weight: bold;
     }
     input, select {
-      width: 100%;
-      padding: 8px;
-      border: none;
-      border-radius: 8px;
-      margin-top: 5px;
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        margin-top: 5px;
     }
     button {
-      width: 100%;
-      background: #222;
-      color: white;
-      padding: 10px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      letter-spacing: 0.5px;
+        margin-top: 20px;
+        background-color: #10b981;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
     }
-    button:hover { background: #333; }
-    .msg {
-      margin: 15px 0;
-      padding: 10px;
-      border-radius: 8px;
-      width: 320px;
-      text-align: center;
+    button:hover {
+        background-color: #059669;
     }
-    .success { background: rgba(16,185,129,0.8); }
-    .error { background: rgba(239,68,68,0.8); }
+    .pesan {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+    }
+    .sukses {
+        background: rgba(16,185,129,0.8);
+    }
+    .gagal {
+        background: rgba(239,68,68,0.8);
+    }
+    .table-section {
+        flex: 2 1 500px;
+        overflow-x: auto;
+    }
     table {
-      width: 90%;
-      max-width: 700px;
-      margin-top: 30px;
-      border-collapse: collapse;
-      background: rgba(255,255,255,0.15);
-      border-radius: 12px;
-      overflow: hidden;
+        width: 100%;
+        border-collapse: collapse;
     }
     th, td {
-      padding: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-      text-align: center;
+        padding: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        text-align: left;
     }
     th {
-      background: rgba(255,255,255,0.25);
-      font-weight: bold;
+        background: rgba(255,255,255,0.2);
     }
     footer {
-      margin-top: 40px;
-      opacity: 0.8;
-      font-size: 0.9em;
+        text-align: center;
+        padding: 15px;
+        background: rgba(0,0,0,0.25);
+        margin-top: auto;
     }
-  </style>
+</style>
 </head>
 <body>
-  <h1>📋 Form Input Data Mahasiswa</h1>
-  <p>Gunakan form berikut untuk menambahkan data mahasiswa baru.</p>
 
-  <?php if (!empty($pesan)): ?>
-    <div class="msg <?= $pesan['type'] ?>"><?= $pesan['text'] ?></div>
-  <?php endif; ?>
+<header>
+    <h1>📘 Aplikasi Input Data Mahasiswa</h1>
+    <p>Mahasiswa diminta membuat aplikasi PHP sederhana seperti sistem input data mahasiswa atau buku tamu online.</p>
+</header>
 
-  <form method="POST">
-    <label for="nama">Nama:</label>
-    <input type="text" name="nama" id="nama" required>
+<main>
+    <section class="form-section">
+        <h2>📝 Form Input</h2>
+        <?php if (!empty($pesan)): ?>
+            <div class="pesan <?= $pesan['tipe'] ?>"><?= $pesan['teks'] ?></div>
+        <?php endif; ?>
 
-    <label for="nim">NIM:</label>
-    <input type="text" name="nim" id="nim" required>
+        <form method="POST">
+            <label>Nama:</label>
+            <input type="text" name="nama" required>
 
-    <label for="prodi">Program Studi:</label>
-    <select name="prodi" id="prodi" required>
-      <option value="">-- Pilih Program Studi --</option>
-      <option>Informatika</option>
-      <option>Sistem Informasi</option>
-      <option>Teknik Komputer</option>
-      <option>Manajemen</option>
-    </select>
+            <label>NIM:</label>
+            <input type="text" name="nim" required>
 
-    <button type="submit">💾 Simpan Data</button>
-  </form>
+            <label>Program Studi:</label>
+            <select name="prodi" required>
+                <option value="">-- Pilih Program Studi --</option>
+                <option>Informatika</option>
+                <option>Sistem Informasi</option>
+                <option>Teknik Komputer</option>
+                <option>Manajemen</option>
+            </select>
 
-  <?php if (!empty($dataMahasiswa)): ?>
-  <h2>📚 Data Mahasiswa Tersimpan</h2>
-  <table>
-    <tr>
-      <th>Nama</th>
-      <th>NIM</th>
-      <th>Program Studi</th>
-      <th>Waktu</th>
-    </tr>
-    <?php foreach ($dataMahasiswa as $baris): 
-      list($nama, $nim, $prodi, $waktu) = explode(" | ", $baris);
-    ?>
-    <tr>
-      <td><?= htmlspecialchars($nama) ?></td>
-      <td><?= htmlspecialchars($nim) ?></td>
-      <td><?= htmlspecialchars($prodi) ?></td>
-      <td><?= htmlspecialchars($waktu) ?></td>
-    </tr>
-    <?php endforeach; ?>
-  </table>
-  <?php endif; ?>
+            <button type="submit">💾 Simpan</button>
+        </form>
+    </section>
 
-  <footer>&copy; 2025 Praktikum Komputasi Awan - Oracle Cloud</footer>
+    <section class="table-section">
+        <h2>📊 Data Mahasiswa</h2>
+        <?php if (!empty($mahasiswa)): ?>
+        <table>
+            <tr>
+                <th>Nama</th>
+                <th>NIM</th>
+                <th>Program Studi</th>
+                <th>Waktu Input</th>
+            </tr>
+            <?php foreach ($mahasiswa as $baris): 
+                list($nama, $nim, $prodi, $waktu) = explode(" | ", $baris);
+            ?>
+            <tr>
+                <td><?= htmlspecialchars($nama) ?></td>
+                <td><?= htmlspecialchars($nim) ?></td>
+                <td><?= htmlspecialchars($prodi) ?></td>
+                <td><?= htmlspecialchars($waktu) ?></td>
+            </tr>
+            <?php endforeach; ?>
+        </table>
+        <?php else: ?>
+        <p>Belum ada data mahasiswa tersimpan.</p>
+        <?php endif; ?>
+    </section>
+</main>
+
+<footer>
+    &copy; 2025 Praktikum Komputasi Awan | Dibuat oleh Mahasiswa
+</footer>
+
 </body>
 </html>
